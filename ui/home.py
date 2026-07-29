@@ -1,7 +1,7 @@
 import streamlit as st
 
 from services.pdf_reader import extract_text
-
+from ui.reading import render_reading
 
 def render_homepage():
 
@@ -23,33 +23,14 @@ def render_homepage():
 
     st.success(f"{uploaded_file.name} loaded successfully!")
 
-    # mode = st.radio(
-    #     "What would you like to do?",
-    #     [
-    #         "🎧 Listen to my notes",
-    #         "🧠 Practice for exam"
-    #     ]
-    # )
-
-    # if mode == "🎧 Listen to my notes":
-
-    #     if st.button("Generate lesson"):
-    #         render_reading(text)
-
-    # else:
-
-    #     if st.button("Start quiz"):
-    #         render_quiz(text)
     st.subheader("What would you like to do?")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("### 🎧 Listen to my notes")
-        if st.button("Generate lesson", use_container_width=True):
+        if st.button("🎧 Listen to my notes", use_container_width=True):
             render_reading(text)
 
     with col2:
-        st.markdown("### 🧠 Practice for exam")
-        if st.button("Start quiz", use_container_width=True):
+        if st.button("🧠 Practice for exam", use_container_width=True):
             render_quiz(text)
