@@ -2,6 +2,7 @@ import streamlit as st
 
 from services.pdf_reader import extract_text
 from ui.reading import render_reading
+from ui.quiz import render_quiz
 
 def render_homepage():
 
