@@ -27,12 +27,20 @@ def generate_lesson(notes):
 
 def render_reading(notes: str):
 
-    with st.spinner("Generating lesson..."):
-        lesson = generate_lesson(notes)
+    if st.session_state.get("lesson_source") != notes:
+        try:
+            with st.spinner("Generating lesson..."):
+                lesson = generate_lesson(notes)
 
-    st.markdown(lesson)
+            with st.spinner("Generating audio..."):
+                audio = synthesize_speech(lesson)
+        except Exception as error:
+            st.error(f"Couldn't generate the lesson: {error}")
+            return
 
-    with st.spinner("Generating audio..."):
-        audio = synthesize_speech(lesson)
+        st.session_state["lesson"] = lesson
+        st.session_state["lesson_audio"] = audio
+        st.session_state["lesson_source"] = notes
 
-    st.audio(audio, format="audio/wav")
+    st.markdown(st.session_state["lesson"])
+    st.audio(st.session_state["lesson_audio"], format="audio/wav")
