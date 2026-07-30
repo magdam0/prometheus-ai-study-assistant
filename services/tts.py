@@ -6,24 +6,33 @@ from pathlib import Path
 from piper import PiperVoice
 from piper.download_voices import download_voice
 
-VOICE_NAME = "en_US-lessac-medium"
+VOICES = {
+    "pl": "pl_PL-gosia-medium",
+    "en": "en_US-lessac-medium",
+}
 MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
-MODEL_PATH = MODELS_DIR / f"{VOICE_NAME}.onnx"
 
-_voice = None
+_voices_cache = {}
+
+POLISH_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")
 
 
-def _get_voice() -> PiperVoice:
-    global _voice
+def _detect_language(text: str) -> str:
+    return "pl" if POLISH_CHARS.search(text) else "en"
 
-    if _voice is None:
-        if not MODEL_PATH.exists():
+
+def _get_voice(language: str) -> PiperVoice:
+    if language not in _voices_cache:
+        voice_name = VOICES[language]
+        model_path = MODELS_DIR / f"{voice_name}.onnx"
+
+        if not model_path.exists():
             MODELS_DIR.mkdir(parents=True, exist_ok=True)
-            download_voice(VOICE_NAME, MODELS_DIR)
+            download_voice(voice_name, MODELS_DIR)
 
-        _voice = PiperVoice.load(str(MODEL_PATH))
+        _voices_cache[language] = PiperVoice.load(str(model_path))
 
-    return _voice
+    return _voices_cache[language]
 
 
 def _clean_for_speech(text: str) -> str:
@@ -40,8 +49,12 @@ def synthesize_speech(text: str) -> bytes:
     Returns WAV audio bytes.
     """
 
-    voice = _get_voice()
     cleaned_text = _clean_for_speech(text)
+
+    if not cleaned_text.strip():
+        raise ValueError("No text to synthesize speech from.")
+
+    voice = _get_voice(_detect_language(cleaned_text))
 
     buffer = io.BytesIO()
     with wave.open(buffer, "wb") as wav_file:
