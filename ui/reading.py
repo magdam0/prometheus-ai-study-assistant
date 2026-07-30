@@ -1,6 +1,7 @@
 import streamlit as st
 
 from services.llm import ask_llm
+from services.tts import synthesize_speech
 
 LESSON_PROMPT = """
 You are an experienced university lecturer.
@@ -30,3 +31,8 @@ def render_reading(notes: str):
         lesson = generate_lesson(notes)
 
     st.markdown(lesson)
+
+    with st.spinner("Generating audio..."):
+        audio = synthesize_speech(lesson)
+
+    st.audio(audio, format="audio/wav")
